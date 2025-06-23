@@ -88,7 +88,7 @@ function __linux_get_os_architecture_getconf()
     self.tLog.info('Unknown bit size from "getconf": "%s"', strOutput)
     strOsArchitecture = strArch
   end
-
+  print("[Debug] OS architecture: " .. strOsArchitecture)
   return strOsArchitecture
 end
 
