@@ -42,19 +42,23 @@ class PlatformDetect:
 
         return strCpuArchitecture
 
-    def __linux_get_os_architecture_getconf(self):
+    def __linux_get_dpkg_architecture(self):
         strCpuArchitecture = None
+        astrReplacements = {
+            'amd64': 'x86_64'
+        }
 
-        # Try to parse the output of the 'getconf LONG_BIT' command.
-        strOutput = subprocess.check_output(
-            ['getconf', 'LONG_BIT']
-        ).decode("utf-8", "replace")
-        strOutputStrip = strOutput.strip()
-        if strOutputStrip == '32':
-            strCpuArchitecture = 'x86'
-        elif strOutputStrip == '64':
-            strCpuArchitecture = 'x86_64'
+        # Try to get the architecture from the 'dpkg' command.
+        strCpuArchitecture = subprocess.check_output(['dpkg', '--print-architecture']).decode(
+            "utf-8",
+            "replace"
+        ).strip()
 
+        # Replace the CPU architectures found in the list.
+        if strCpuArchitecture in astrReplacements:
+            strCpuArchitecture = astrReplacements[strCpuArchitecture]
+
+        print(f"******[DEBUG] Detected architecture from dpkg: {strCpuArchitecture}")
         return strCpuArchitecture
 
     def __linux_get_cpu_architecture_lscpu(self):
@@ -123,14 +127,8 @@ class PlatformDetect:
             self.strStandardArchiveFormat = 'zip'
         elif strSystem == 'Linux':
             # This is a Linux.
-
             # Detect the CPU architecture.
-            # Prefer the OS architecture over the CPU architecture to honour a
-            # 32bit OS on a 64bit CPU. This happens with a 32bit Docker
-            # container on a 64bit host.
-            strCpuArch = self.__linux_get_os_architecture_getconf()
-            if strCpuArch is None:
-                strCpuArch = self.__linux_get_cpu_architecture_lscpu()
+            strCpuArch = self.__linux_get_dpkg_architecture()
             self.strHostCpuArchitecture = strCpuArch
 
             # Detect the distribution.
