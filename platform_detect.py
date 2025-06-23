@@ -142,3 +142,12 @@ class PlatformDetect:
             print(f"[DEBUG] CPU architecture: {strCpuArch}")
         else:
             raise Exception('Unknown platform: "%s"' % (strSystem))
+
+
+if __name__ == "__main__":
+    pd = PlatformDetect()
+    pd.detect()
+    print("CPU Architecture:", pd.strHostCpuArchitecture)
+    print("Distribution ID:", pd.strHostDistributionId)
+    print("Distribution Version:", pd.strHostDistributionVersion)
+    print("Standard Archive Format:", pd.strStandardArchiveFormat)
