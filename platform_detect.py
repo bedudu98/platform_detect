@@ -45,40 +45,15 @@ class PlatformDetect:
     def __linux_get_os_architecture_getconf(self):
         strCpuArchitecture = None
 
-        # First, try to parse the output of the 'getconf LONG_BIT' command.
-        try:
-            strOutput = subprocess.check_output(
-                ['getconf', 'LONG_BIT']
-            ).decode("utf-8", "replace")
-            strOutputStrip = strOutput.strip()
-            print(f"[DEBUG] getconf LONG_BIT output: {strOutputStrip}")
-            if strOutputStrip == '32':
-                strCpuArchitecture = 'x86'
-            elif strOutputStrip == '64':
-                # Now check uname -m for more accurate architecture
-                try:
-                    uname_output = subprocess.check_output(
-                        ['uname', '-m']
-                    ).decode("utf-8", "replace").strip()
-                    print(f"[DEBUG] uname -m output: {uname_output}")
-                    if uname_output == 'x86_64':
-                        strCpuArchitecture = 'x86_64'
-                    elif uname_output == 'aarch64':
-                        strCpuArchitecture = 'arm64'
-                    elif 'arm' in uname_output:
-                        strCpuArchitecture = 'arm'
-                    elif 'riscv64' in uname_output:
-                        strCpuArchitecture = 'riscv64'
-                    elif re.match(r'i\d86', uname_output):
-                        strCpuArchitecture = 'x86'
-                    else:
-                        strCpuArchitecture = uname_output
-                except Exception as e:
-                    print(f"[DEBUG] Failed to run uname -m: {e}")
-                    strCpuArchitecture = 'x86_64'  # fallback
-        except Exception as e:
-            print(f"[DEBUG] Failed to run getconf LONG_BIT: {e}")
-            strCpuArchitecture = None
+        # Try to parse the output of the 'getconf LONG_BIT' command.
+        strOutput = subprocess.check_output(
+            ['getconf', 'LONG_BIT']
+        ).decode("utf-8", "replace")
+        strOutputStrip = strOutput.strip()
+        if strOutputStrip == '32':
+            strCpuArchitecture = 'x86'
+        elif strOutputStrip == '64':
+            strCpuArchitecture = 'x86_64'
 
         return strCpuArchitecture
 
@@ -164,20 +139,5 @@ class PlatformDetect:
 
             # Linux uses TAR GZIP as standard archive format.
             self.strStandardArchiveFormat = 'tar.gz'
-
-            print(f"[DEBUG] CPU architecture from lscpu: {strCpuArch}")
         else:
             raise Exception('Unknown platform: "%s"' % (strSystem))
-
-if __name__ == '__main__':
-    # This is a test run.
-    platform_detect = PlatformDetect()
-    platform_detect.detect()
-    print('CPU architecture: %s' %
-          (platform_detect.strHostCpuArchitecture))
-    print('Distribution ID: %s' %
-          (platform_detect.strHostDistributionId))
-    print('Distribution version: %s' %
-          (platform_detect.strHostDistributionVersion))
-    print('Standard archive format: %s' %
-          (platform_detect.strStandardArchiveFormat))
