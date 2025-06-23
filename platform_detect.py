@@ -139,5 +139,6 @@ class PlatformDetect:
 
             # Linux uses TAR GZIP as standard archive format.
             self.strStandardArchiveFormat = 'tar.gz'
+            print(f"[DEBUG] CPU architecture: {strCpuArch}")
         else:
             raise Exception('Unknown platform: "%s"' % (strSystem))
