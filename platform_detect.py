@@ -45,15 +45,40 @@ class PlatformDetect:
     def __linux_get_os_architecture_getconf(self):
         strCpuArchitecture = None
 
-        # Try to parse the output of the 'getconf LONG_BIT' command.
-        strOutput = subprocess.check_output(
-            ['getconf', 'LONG_BIT']
-        ).decode("utf-8", "replace")
-        strOutputStrip = strOutput.strip()
-        if strOutputStrip == '32':
-            strCpuArchitecture = 'x86'
-        elif strOutputStrip == '64':
-            strCpuArchitecture = 'x86_64'
+        # First, try to parse the output of the 'getconf LONG_BIT' command.
+        try:
+            strOutput = subprocess.check_output(
+                ['getconf', 'LONG_BIT']
+            ).decode("utf-8", "replace")
+            strOutputStrip = strOutput.strip()
+            print(f"[DEBUG] getconf LONG_BIT output: {strOutputStrip}")
+            if strOutputStrip == '32':
+                strCpuArchitecture = 'x86'
+            elif strOutputStrip == '64':
+                # Now check uname -m for more accurate architecture
+                try:
+                    uname_output = subprocess.check_output(
+                        ['uname', '-m']
+                    ).decode("utf-8", "replace").strip()
+                    print(f"[DEBUG] uname -m output: {uname_output}")
+                    if uname_output == 'x86_64':
+                        strCpuArchitecture = 'x86_64'
+                    elif uname_output == 'aarch64':
+                        strCpuArchitecture = 'arm64'
+                    elif 'arm' in uname_output:
+                        strCpuArchitecture = 'arm'
+                    elif 'riscv64' in uname_output:
+                        strCpuArchitecture = 'riscv64'
+                    elif re.match(r'i\d86', uname_output):
+                        strCpuArchitecture = 'x86'
+                    else:
+                        strCpuArchitecture = uname_output
+                except Exception as e:
+                    print(f"[DEBUG] Failed to run uname -m: {e}")
+                    strCpuArchitecture = 'x86_64'  # fallback
+        except Exception as e:
+            print(f"[DEBUG] Failed to run getconf LONG_BIT: {e}")
+            strCpuArchitecture = None
 
         return strCpuArchitecture
 
