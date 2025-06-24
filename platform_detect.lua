@@ -32,6 +32,40 @@ function get_os_architecture()
   return strOsArchitecture
 end
 
+function __linux_get_dpkg_architecture()
+  local strCpuArchitecture = nil
+  local replacements = {
+    amd64 = "x86_64"
+  }
+
+  if io.popen == nil then
+    print("Unable to detect the CPU architecture: io.popen is not available.")
+    return nil
+  end
+
+  local tFile, strError = io.popen("dpkg --print-architecture")
+  if tFile == nil then
+    print(string.format('Failed to get the CPU architecture with "dpkg": %s', strError))
+    return nil
+  end
+
+  local strArch = tFile:read("*l")
+  tFile:close()
+
+  if strArch ~= nil then
+    if replacements[strArch] ~= nil then
+      strCpuArchitecture = replacements[strArch]
+    else
+      strCpuArchitecture = strArch
+    end
+    print("******[DEBUG] Detected architecture from dpkg: " .. strCpuArchitecture)
+    return strCpuArchitecture
+  else
+    print("Could not read architecture from dpkg output.")
+    return nil
+  end
+end
+
 function __linux_get_os_architecture_getconf()
   local strOsArchitecture
 
