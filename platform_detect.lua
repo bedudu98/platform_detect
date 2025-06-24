@@ -129,6 +129,7 @@ end
 -- Main program
 local arch = get_os_architecture()
 local os = __linux_get_os_architecture_getconf()
+local dpkg_arch = __linux_get_dpkg_architecture()
 if arch then
   print("Detected architecture: " .. arch)
 else
@@ -139,4 +140,9 @@ if os then
   print("Detected os architecture: " .. os)
 else
   print("Could not detect os architecture.")
+end
+if dpkg_arch then
+  print("Detected dpkg architecture: " .. dpkg_arch)
+else
+  print("Could not detect dpkg architecture.")
 end
